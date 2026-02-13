@@ -78,7 +78,11 @@ def get_active_process_name():
 
 # ---------- Settings storage ----------
 
-SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pomodoro_settings.json")
+# Use exe directory for bundled app, script directory for development
+if getattr(sys, 'frozen', False):
+    SETTINGS_FILE = os.path.join(os.path.dirname(sys.executable), "pomodoro_settings.json")
+else:
+    SETTINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pomodoro_settings.json")
 
 DEFAULT_SETTINGS = {
     "right_apps": ["blender", "houdini"],
@@ -110,7 +114,7 @@ def save_settings(settings):
 # ---------- Garden logic ----------
 
 PLANT = "🌱"
-FLOWERS = ["🌸", "💮", "🪷", "🏵️", "🌹", "🥀", "🌺", "🌻", "🌼", "🌷", "🪻", "🐵", "🐰", "🦥", "🥚", "🐸", "🐼"]
+FLOWERS = ["🌸", "💮", "🪷", "🏵️", "🌹", "🥀", "🌺", "🌻", "🌼", "🌷", "🪻", "🐵", "🐰", "🦥", "🥚", "🐸", "🐼", "🤠"]
 
 
 # ---------- Settings dialog ----------
@@ -233,7 +237,7 @@ class PomodoroWindow(QMainWindow):
 
         self.tray_icon = QSystemTrayIcon(self)
         # Set emoji icon for window and tray
-        emoji_icon = self.create_emoji_icon("🌱")
+        emoji_icon = self.create_emoji_icon("🤠")
         self.setWindowIcon(emoji_icon)
         self.tray_icon.setIcon(emoji_icon)
         self.tray_icon.setVisible(True)
@@ -256,12 +260,8 @@ class PomodoroWindow(QMainWindow):
         self.annoying_media_player.mediaStatusChanged.connect(self.on_annoying_song_finished)
         self.annoying_song_playing = False
 
-        # Start the idle timer immediately
-        self.timer.start()
-        
-        # Start playing annoying song on app startup (idle mode)
-        self.play_annoying_song_loop()
-        self.idle_annoying_song_playing = True
+        # Start work session immediately on app open
+        self.start_pomodoro()
 
     # ----- Core helpers -----
 
