@@ -1,6 +1,6 @@
 # Cotton Eye Pomodoro
 
-A fun Pomodoro timer app that plays "Cotton Eye Joe" song when you get distracted.
+A Pomodoro timer app that plays "Cotton Eye Joe" song when you get distracted.
 
 ## Quickstart
 
