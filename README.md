@@ -21,9 +21,8 @@ A Pomodoro timer app that plays "Cotton Eye Joe" song when you get distracted.
 ## Features
 
 - Pomodoro timer with customizable work and break intervals
-- Motivational quotes played during breaks
 - "Cotton Eye Joe" plays if you get distracted
-- Audio notifications for session changes
+- Beeping audio notifications for session changes
 
 ## Requirements
 
