@@ -185,6 +185,7 @@ class PomodoroWindow(QMainWindow):
         self.wrong_app_notified_time = None
         self.break_overtime_notified = False
         self.last_overtime_speech_time = None
+        self.idle_annoying_song_playing = False
 
         self.work_total_seconds = self.settings["work_minutes"] * 60
         self.break_total_seconds = self.settings["break_minutes"] * 60
@@ -257,6 +258,10 @@ class PomodoroWindow(QMainWindow):
 
         # Start the idle timer immediately
         self.timer.start()
+        
+        # Start playing annoying song on app startup (idle mode)
+        self.play_annoying_song_loop()
+        self.idle_annoying_song_playing = True
 
     # ----- Core helpers -----
 
@@ -288,32 +293,7 @@ class PomodoroWindow(QMainWindow):
         except Exception:
             pass  # Silently handle any audio errors
 
-    def speak_motivational(self):
-        """Play a random motivational quote MP3 from the quotes folder."""
-        try:
-            # Get the folder containing this script
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            quotes_folder = os.path.join(script_dir, "motivational_quotes_mp3")
-            
-            # Check if folder exists and has MP3 files
-            if not os.path.exists(quotes_folder):
-                return  # Folder doesn't exist, silently skip
-            
-            # Get all MP3 files
-            mp3_files = [f for f in os.listdir(quotes_folder) if f.lower().endswith('.mp3')]
-            
-            if not mp3_files:
-                return  # No MP3 files found, silently skip
-            
-            # Pick a random MP3 file
-            random_mp3 = random.choice(mp3_files)
-            mp3_path = os.path.join(quotes_folder, random_mp3)
-            
-            # Play the MP3 file using QMediaPlayer (in-app playback)
-            self.media_player.setSource(QUrl.fromLocalFile(mp3_path))
-            self.media_player.play()
-        except Exception:
-            pass  # Silently handle any errors
+
 
     def play_annoying_song_loop(self):
         """Play a random annoying song from the annoying_songs_mp3 folder on loop."""
@@ -446,6 +426,10 @@ class PomodoroWindow(QMainWindow):
         self.label_status.setText("Working…")
         self.label_time.setText(self.format_duration_minutes(self.remaining_seconds))
         self.btn_start.setText("Stop")
+        # Stop idle annoying song when starting work session
+        if self.idle_annoying_song_playing:
+            self.stop_annoying_song()
+            self.idle_annoying_song_playing = False
         self.timer.start()
 
     def stop_work(self):
@@ -473,13 +457,15 @@ class PomodoroWindow(QMainWindow):
         self.last_overtime_speech_time = None
         self.stopped_elapsed_seconds = 0
         self.idle_elapsed_seconds = 0
-        self.stop_annoying_song()  # Stop annoying song if playing
         self.timer.stop()
         self.label_status.setText("Idle")
         self.btn_start.setText("Start")
         self.label_time.setStyleSheet("font-size: 32px; color: red;")
         self.remaining_seconds = self.work_total_seconds
         self.label_time.setText(self.format_time(self.remaining_seconds))
+        # Restart idle annoying song when returning to idle
+        self.play_annoying_song_loop()
+        self.idle_annoying_song_playing = True
 
     def start_break(self):
         self.is_on_break = True
@@ -491,6 +477,10 @@ class PomodoroWindow(QMainWindow):
         self.last_overtime_speech_time = None
         self.remaining_seconds = self.break_total_seconds
         self.label_status.setText("Break")
+        # Stop idle annoying song when starting break session
+        if self.idle_annoying_song_playing:
+            self.stop_annoying_song()
+            self.idle_annoying_song_playing = False
         if not self.timer.isActive():
             self.timer.start()
 
